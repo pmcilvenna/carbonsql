@@ -14,8 +14,8 @@ WITH labels_filter AS (
     WHERE object_type = 'SupplyTag'
       AND label_id = 2432  -- Use equality instead of IN for single value
 ),
--- Pre-filter and aggregate the main data with clustering optimization
-optimized_base AS (
+-- First aggregation level (matching original subquery structure)
+first_agg AS (
     SELECT /*+ MATERIALIZED */
         content_id,
         content_title,
@@ -52,12 +52,12 @@ SELECT /*+ RESULT_CACHE */
     network_name,
     supply_router_id,
     sr.name AS supply_router
-FROM optimized_base
-    LEFT JOIN vd.supply_tags AS st ON optimized_base.supply_tag_id = st.id
-    LEFT JOIN vd.labels AS supply_tag_labels ON optimized_base.supply_tag_id = supply_tag_labels.object_id
+FROM first_agg
+    LEFT JOIN vd.supply_tags AS st ON first_agg.supply_tag_id = st.id
+    LEFT JOIN vd.labels AS supply_tag_labels ON first_agg.supply_tag_id = supply_tag_labels.object_id
         AND supply_tag_labels.object_type = 'SupplyTag'
         AND supply_tag_labels.label_id = 2432  -- Use equality instead of IN
-    LEFT JOIN vd.supply_routers AS sr ON optimized_base.supply_router_id = sr.id
+    LEFT JOIN vd.supply_routers AS sr ON first_agg.supply_router_id = sr.id
 GROUP BY 
     supply_tag_label,
     sr.supply_partner_id,
