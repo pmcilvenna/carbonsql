@@ -14,8 +14,8 @@ WITH optimized_base AS (
     SELECT /*+ MATERIALIZED */
         demand_tag_id,
         foreign_deal_id,
-        -- Pre-calculate timezone conversion once with optimized function
-        DATE_TRUNC('hour', ymdh::TIMESTAMP_NTZ AT TIME ZONE 'America/New_York') AS ymdh_ny,
+        -- Pre-calculate timezone conversion once with correct Snowflake syntax
+        DATE_TRUNC('hour', CONVERT_TIMEZONE('UTC', 'America/New_York', ymdh)) AS ymdh_ny,
         -- Pre-calculate all aggregations in single pass
         SUM(cost + platform_fees + data_cost + ivt_fees_estimate) AS billable_cost,
         SUM(CASE WHEN tier_breakout = TRUE THEN impressions ELSE 0 END) AS breakout_impressions,
@@ -29,7 +29,7 @@ WITH optimized_base AS (
     GROUP BY 
         demand_tag_id,
         foreign_deal_id,
-        DATE_TRUNC('hour', ymdh::TIMESTAMP_NTZ AT TIME ZONE 'America/New_York')
+        DATE_TRUNC('hour', CONVERT_TIMEZONE('UTC', 'America/New_York', ymdh))
     HAVING SUM(ad_requests) = 0
 )
 SELECT /*+ RESULT_CACHE */
