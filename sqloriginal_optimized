@@ -1,0 +1,40 @@
+-- Optimized SQL for Snowflake - Performance focused
+WITH filtered_data AS (
+    SELECT /*+ MATERIALIZED */
+        revenue,
+        CASE 
+            WHEN supply_router_id != 0 THEN routed_wo_missed_requests + routed_pm_missed_requests + routed_missed_requests + usable_requests
+            ELSE usable_requests + blocked_requests + whiteops_blocked + prebid_blocked_internal_domain + prebid_blocked_internal_ip + prebid_blocked_internal_wo_cache + ss_protected_media_prebid_susp + ss_protected_media_prebid_fraud + prebid_blocked_internal_pm_cache_susp + prebid_blocked_internal_pm_cache_fraud
+        END AS total_requests_calc,
+        CASE WHEN ymdh < DATEADD(hour, -72, '2025-06-20 10:00:00') THEN whiteops_attempts ELSE 0 END AS whiteops_attempts_delayed,
+        CASE WHEN ymdh < DATEADD(hour, -72, '2025-06-20 10:00:00') THEN whiteops_blocked + prebid_blocked_internal_wo_cache ELSE 0 END AS whiteops_blocked_delayed,
+        whiteops_blocked + prebid_blocked_internal_wo_cache AS whiteops_blocked_without_delay,
+        key_values['channel_id'] AS channel_id,
+        DATE_TRUNC('day', ymdh) AS day_trunc
+    FROM vd.supply_full_aggregations
+    WHERE account_id = 1112
+        AND ymdh BETWEEN '2025-06-19 00:00:00' AND '2025-06-19 23:59:59'
+        AND key_values['channel_id'] IS NOT NULL
+        AND supply_tag_id IN (
+            SELECT object_id 
+            FROM labels 
+            WHERE object_type = 'SupplyTag' AND label_id = 1698
+        )
+),
+supply_tags AS (
+    SELECT /*+ MATERIALIZED */
+        object_id
+    FROM labels 
+    WHERE object_type = 'SupplyTag' AND label_id = 1698
+)
+SELECT /*+ RESULT_SCAN */
+    SUM(revenue) AS revenue,
+    SUM(total_requests_calc) AS total_requests,
+    SUM(whiteops_attempts_delayed) AS whiteops_attempts_delayed,
+    SUM(whiteops_blocked_delayed) AS whiteops_blocked,
+    SUM(whiteops_blocked_delayed) AS whiteops_blocked_delayed,
+    SUM(whiteops_blocked_without_delay) AS whiteops_blocked_without_delay,
+    day_trunc AS ymdh
+FROM filtered_data
+GROUP BY day_trunc, channel_id
+ORDER BY day_trunc ASC, SUM(total_requests_calc) DESC;
