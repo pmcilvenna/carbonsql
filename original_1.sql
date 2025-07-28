@@ -1,0 +1,127 @@
+/* VASTDESK REPORTING ACCOUNT 1197 USER 20777 CACHE ID 1753704000000366a8783149994b120062992747c0a0b */
+SELECT
+    sum(ad_seconds) AS ad_seconds,
+    sum(analyzed_impressions) AS analyzed_impressions,
+    sum(ap_demand_opportunity_seconds) AS ap_demand_opportunity_seconds,
+    sum(ap_slots_seconds_filled) AS ap_slots_seconds_filled,
+    sum(billable_cost) AS billable_cost,
+    sum(breakout_impressions) AS breakout_impressions,
+    sum(cdn_cost) AS cdn_cost,
+    sum(clicks) AS clicks,
+    sum(complete_vis_aud_impressions) AS complete_vis_aud_impressions,
+    sum(cost) AS cost,
+    sum(duplicate_impressions) AS duplicate_impressions,
+    sum(errors) AS errors,
+    sum(expired_impressions) AS expired_impressions,
+    sum(first_quartile) AS first_quartile,
+    sum(forensiq_impressions) AS forensiq_impressions,
+    sum(forensiq_ivt_impressions) AS forensiq_ivt_impressions,
+    sum(fourth_quartile) AS fourth_quartile,
+    sum(has_ads) AS has_ads,
+    sum(ias_bot_impressions) AS ias_bot_impressions,
+    sum(ias_groupm_viewable_impressions) AS ias_groupm_viewable_impressions,
+    sum(ias_impressions) AS ias_impressions,
+    sum(ias_mrc_viewable_impressions) AS ias_mrc_viewable_impressions,
+    sum(impressions) AS impressions,
+    sum(in_view_impressions) AS in_view_impressions,
+    sum(ivt_fees) AS ivt_fees,
+    sum(ivt_fees_estimate) AS ivt_fees_estimate,
+    sum(moat_human_impressions) AS moat_human_impressions,
+    sum(non_billable_fees) AS non_billable_fees,
+    sum(openrtb_bidder_errors) AS openrtb_bidder_errors,
+    sum(openrtb_bids) AS openrtb_bids,
+    sum(openrtb_bid_requests) AS openrtb_bid_requests,
+    sum(openrtb_wins) AS openrtb_wins,
+    sum(opportunities) AS opportunities,
+    sum(opportunity_response_time) AS opportunity_response_time,
+    sum(platform_fees) AS platform_fees,
+    sum(player_audible_full_vis_half_time_sum) AS player_audible_full_vis_half_time_sum,
+    sum(protected_media_ivt_impressions) AS protected_media_ivt_impressions,
+    sum(protected_media_total_impressions) AS protected_media_total_impressions,
+    sum(revenue) AS revenue,
+    sum(second_quartile) AS second_quartile,
+    sum(segment_data_cost) AS segment_data_cost,
+    sum(starts) AS starts,
+    sum(third_party_fees) AS third_party_fees,
+    sum(third_quartile) AS third_quartile,
+    sum(timeouts) AS timeouts,
+    sum(total_requests) AS total_requests,
+    sum(two_sec_video_in_view_impressions) AS two_sec_video_in_view_impressions,
+    sum(usable_requests) AS usable_requests,
+    sum(vast_responses) AS vast_responses,
+    demand_tag_id
+FROM
+    (
+        SELECT
+            sum(ad_seconds) AS ad_seconds,
+            sum(loads_unfiltered) AS analyzed_impressions,
+            sum(ap_demand_opportunity_seconds) AS ap_demand_opportunity_seconds,
+            sum(ap_slots_seconds_filled) AS ap_slots_seconds_filled,
+            sum(
+                    (
+                        cost + platform_fees + data_cost + ivt_fees_estimate
+                        )
+            ) AS billable_cost,
+            sum(
+                    CASE
+                        WHEN tier_breakout = True THEN impressions
+                        ELSE 0
+                        END
+            ) AS breakout_impressions,
+            sum(cdn_cost) AS cdn_cost,
+            sum(clicks) AS clicks,
+            sum(ad_vis_and_aud_on_complete_sum) AS complete_vis_aud_impressions,
+            sum(cost) AS cost,
+            sum(duplicate_impressions) AS duplicate_impressions,
+            sum(errors) AS errors,
+            sum(expired_impressions) AS expired_impressions,
+            sum(first_quartile) AS first_quartile,
+            sum(forensiq_measurable_impressions) AS forensiq_impressions,
+            sum(forensiq_invalid_impressions) AS forensiq_ivt_impressions,
+            sum(fourth_quartile) AS fourth_quartile,
+            sum(has_ads) AS has_ads,
+            sum(ias_ivt_impressions) AS ias_bot_impressions,
+            sum(ias_groupm_viewable_impressions) AS ias_groupm_viewable_impressions,
+            sum(ias_measurable_impressions) AS ias_impressions,
+            sum(ias_mrc_viewable_impressions) AS ias_mrc_viewable_impressions,
+            sum(impressions) AS impressions,
+            sum(measurable_impressions) AS in_view_impressions,
+            sum(ivt_fees_actual) AS ivt_fees,
+            sum(ivt_fees_estimate) AS ivt_fees_estimate,
+            sum(susp_human) AS moat_human_impressions,
+            sum(non_billable_fees) AS non_billable_fees,
+            sum(openrtb_bidder_errors) AS openrtb_bidder_errors,
+            sum(openrtb_bids) AS openrtb_bids,
+            sum(openrtb_bid_requests) AS openrtb_bid_requests,
+            sum(openrtb_wins) AS openrtb_wins,
+            sum(opportunities) AS opportunities,
+            sum(opportunity_response_time) AS opportunity_response_time,
+            sum(platform_fees) AS platform_fees,
+            sum(player_audible_full_vis_half_time_sum) AS player_audible_full_vis_half_time_sum,
+            sum(protected_media_ivt_impressions) AS protected_media_ivt_impressions,
+            sum(protected_media_total_impressions) AS protected_media_total_impressions,
+            sum(revenue) AS revenue,
+            sum(second_quartile) AS second_quartile,
+            sum(data_cost) AS segment_data_cost,
+            sum(starts) AS starts,
+            sum(third_party_fees) AS third_party_fees,
+            sum(third_quartile) AS third_quartile,
+            sum(opportunity_timeouts + vast_request_timeouts) AS timeouts,
+            sum(ad_requests) AS total_requests,
+            sum(two_sec_video_in_view_impressions) AS two_sec_video_in_view_impressions,
+            sum(ad_requests) AS usable_requests,
+            sum(vast_responses) AS vast_responses,
+            agg_table.demand_tag_id AS demand_tag_id
+        FROM
+            vd.demand_full_aggregations AS agg_table
+        WHERE
+            agg_table.account_id IN (1197)
+          AND ymdh >= '2025-06-29 00:00:00'
+          AND agg_table.country IN ('KZ', 'UZ')
+        GROUP BY
+            agg_table.demand_tag_id
+    ) agg_table
+GROUP BY
+    demand_tag_id
+ORDER BY
+    total_requests DESC
